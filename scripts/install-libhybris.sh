@@ -43,6 +43,9 @@ cd "$WORKDIR"
 echo "Cloning and building libhybris..."
 git clone --depth=1 https://github.com/Linux-on-droid/libhybris.git
 cd libhybris/hybris
+export CFLAGS="-fno-PIE -fno-pie"
+export CXXFLAGS="-fno-PIE -fno-pie"
+export LDFLAGS="-no-pie"
 ./autogen.sh --prefix=/usr
 make -j$(nproc)
 make install
@@ -76,7 +79,8 @@ echo "Building create-disp daemon..."
 # Clone create-disp repository
 git clone --depth=1 https://github.com/Linux-on-droid/create-disp.git
 cd create-disp
-# Fix CMake configuration to find libhybris
+# Fix CMake configuration to find libhybris and remove hybris-platformcommon
+sed -i 's/hybris-platformcommon//g' CMakeLists.txt
 mkdir build && cd build
 if command -v cmake >/dev/null 2>&1; then
     cmake .. -DCMAKE_BUILD_TYPE=Release
