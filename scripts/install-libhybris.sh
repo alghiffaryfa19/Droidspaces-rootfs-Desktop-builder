@@ -23,12 +23,12 @@ if [ "$PKG_MGR" = "apt" ]; then
     apt-get update
     apt-get install -y --no-install-recommends \
         git build-essential pkg-config autoconf automake libtool \
-        libwayland-dev libdrm-dev cmake
+        libwayland-dev libdrm-dev cmake clang
 elif [ "$PKG_MGR" = "dnf" ]; then
     dnf install -y git gcc gcc-c++ make pkgconf autoconf automake libtool \
-        wayland-devel libdrm-devel cmake
+        wayland-devel libdrm-devel cmake clang
 elif [ "$PKG_MGR" = "pacman" ]; then
-    pacman -Sy --noconfirm git base-devel pkgconf wayland libdrm cmake
+    pacman -Sy --noconfirm git base-devel pkgconf wayland libdrm cmake clang
 fi
 
 WORKDIR=$(mktemp -d)
@@ -43,9 +43,11 @@ cd "$WORKDIR"
 echo "Cloning and building libhybris..."
 git clone --depth=1 https://github.com/Linux-on-droid/libhybris.git
 cd libhybris/hybris
-export CFLAGS="-fno-PIE -fno-pie"
-export CXXFLAGS="-fno-PIE -fno-pie"
-export LDFLAGS="-no-pie"
+export CC=clang
+export CXX=clang++
+export CFLAGS="-Wno-error"
+export CXXFLAGS="-Wno-error"
+export LDFLAGS=""
 ./autogen.sh --prefix=/usr
 make -j$(nproc)
 make install
