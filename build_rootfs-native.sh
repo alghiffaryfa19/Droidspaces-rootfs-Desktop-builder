@@ -176,7 +176,6 @@ docker buildx build \
   --build-arg ENABLE_nosnap_ARG="$ENABLE_nosnap" \
   --build-arg ENABLE_systemd257_ARG="$ENABLE_systemd257" \
   --build-arg ENABLE_8gen2_wayland_ARG="$ENABLE_8gen2_wayland" \
-
   --build-arg USERNAME="$USERNAME" \
   -f "$DOCKERFILE" \
   .
