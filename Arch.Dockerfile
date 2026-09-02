@@ -17,14 +17,10 @@ ARG ENABLE_srf_ARG
 ARG ENABLE_tmoe_ARG
 ARG ENABLE_systemd257_ARG
 ARG USERNAME
-ARG ANLAND_RELEASE_REPOSITORY=Goldzxcbug/droidspaces-package
-ARG ANLAND_PACKAGE_REVISION=unknown
 ######################################################
 
 COPY scripts/install-usb-manager.sh /usr/local/sbin/install-droidspaces-usb-manager
 COPY scripts/systemd257.sh /usr/local/sbin/systemd257
-COPY scripts/install-anland-kde.sh /usr/local/sbin/install-anland-kde
-COPY scripts/install-anland-gnome.sh /usr/local/sbin/install-anland-gnome
 COPY scripts/install-mesa.sh /usr/local/sbin/install-mesa
 COPY scripts/install-hangover-wine.sh /usr/local/sbin/install-hangover-wine
 COPY scripts/install-winefonts.sh /usr/local/sbin/install-winefonts
@@ -34,7 +30,7 @@ COPY scripts/configure-desktop.sh /usr/local/sbin/configure-desktop
 COPY scripts/start-desktop-session.sh /usr/local/bin/start-desktop-session
 COPY scripts/desktops/ /usr/local/lib/droidspaces/desktops/
 
-RUN chmod +x /usr/local/sbin/install-anland-* /usr/local/sbin/install-mesa /usr/local/sbin/install-hangover-wine /usr/local/sbin/install-winefonts /usr/local/sbin/install-desktop /usr/local/sbin/configure-desktop /usr/local/bin/droidspaces-tui /usr/local/bin/start-desktop-session /usr/local/lib/droidspaces/desktops/*.sh && \
+RUN chmod +x /usr/local/sbin/install-mesa /usr/local/sbin/install-hangover-wine /usr/local/sbin/install-winefonts /usr/local/sbin/install-desktop /usr/local/sbin/configure-desktop /usr/local/bin/droidspaces-tui /usr/local/bin/start-desktop-session /usr/local/lib/droidspaces/desktops/*.sh && \
     ln -s droidspaces-tui /usr/local/bin/dstui && \
     ln -s droidspaces-tui /usr/local/bin/ds-tui && \
     sed -i '/^#ParallelDownloads/s/^#//' /etc/pacman.conf && \
@@ -83,14 +79,6 @@ RUN chmod +x /usr/local/sbin/install-anland-* /usr/local/sbin/install-mesa /usr/
         chmod -R 755 /usr/local/etc/tmoe-linux; \
     fi
 
-# 启用 Anland 时从固定滚动 GitHub Release 安装对应桌面的 ARM64 包。
-RUN if [ "$DISPLAY_BACKEND" = "anland-wayland" ]; then \
-        echo "--> [enabled] Installing Anland $DESKTOP packages (${ANLAND_PACKAGE_REVISION})..." && \
-        ANLAND_RELEASE_REPOSITORY="$ANLAND_RELEASE_REPOSITORY" \
-        /usr/local/sbin/install-anland-kde --1 && \
-        echo "--> [enabled] Anland $DESKTOP support installed"; \
-    fi
-
 # 配置 Locale 与 SSH
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
     if [ "$ENABLE_zh_tz_ARG" = "true" ]; then \
@@ -135,7 +123,7 @@ RUN if [ "$PulseAudio" = "socket" ]; then \
         echo "PULSE_SERVER=tcp:127.0.0.1:4713" >> /etc/environment; \
     fi
 
-RUN if [ "$ENABLE_mesa_ARG" = "true" ] && [ "$DISPLAY_BACKEND" = "anland-wayland" ]; then \
+RUN if [ "$ENABLE_mesa_ARG" = "true" ] && [ "$DISPLAY_BACKEND" = "wayland" ]; then \
         echo 'MESA_LOADER_DRIVER_OVERRIDE=kgsl' >> /etc/environment; \
         echo 'GALLIUM_DRIVER=kgsl' >> /etc/environment; \
         echo 'FD_FORCE_KGSL=1' >> /etc/environment; \
@@ -171,7 +159,7 @@ SDL_IM_MODULE=fcitx5
 GLFW_IM_MODULE=fcitx
 EOF
 fi
-    if [ "$ENABLE_mesa_ARG" = "true" ] && [ "$DISPLAY_BACKEND" != "anland-wayland" ] ; then
+    if [ "$ENABLE_mesa_ARG" = "true" ] && [ "$DISPLAY_BACKEND" != "wayland" ] ; then
         cat <<'EOF' >> /etc/environment
 MESA_LOADER_DRIVER_OVERRIDE=kgsl
 TU_DEBUG=noconform

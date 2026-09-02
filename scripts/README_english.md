@@ -15,10 +15,6 @@ This directory contains installers used while building the RootFS, maintenance t
 | `install-mesa.sh` | ARM64 Linux container | Installs the latest Android-container Mesa build and MediaCodec VA-API driver, then locks Mesa packages. |
 | `install-hangover-wine.sh` | ARM64 Linux container | Installs the Hangover Wine Release packages matching the current distribution. |
 | `install-winefonts.sh` | Linux container | Installs the Wine font bundle and refreshes the fontconfig cache. |
-| `install-anland-kde.sh` | ARM64 Linux container | Installs Anland patched KWin/Xwayland Release packages and locks them. |
-| `install-anland-gnome.sh` | ARM64 Debian/Ubuntu container | Installs Anland patched Mutter/Xwayland Release packages and locks them. |
-| `install-anland-desktop.sh` | RootFS build environment | Dispatches a desktop slug to the KDE or GNOME Anland installer. |
-| `lib/anland-build.sh` | RootFS build host | Resolves the Anland package family, Release tag, and revision for native/QEMU builds. |
 | `install-usb-manager.sh` | Linux container | Installs Droidspaces USB Manager, distribution dependencies, launchers, and user permissions. |
 | `systemd257.sh` | RootFS build environment | Installs a complete package-manager-owned systemd 257 family when required by an old Android kernel. |
 | `download-firmware` | Debian/Ubuntu container | Installs `linux-firmware` and decompresses its `.zst` firmware. |
@@ -97,40 +93,6 @@ Desktop names, target capabilities, and backend compatibility live in `lib/deskt
 4. Add its display label to the `desktop` choice in both workflow entry files.
 
 All seven Dockerfiles and the reusable workflow already use the generic profile interface, so an ordinary X11 desktop does not require copied Dockerfiles. Profiles that require patched Wayland packages must also map to a package family in `lib/anland-build.sh` through `anland_package_family`.
-
-## Anland KDE Installer
-
-`install-anland-kde.sh` reads `anland-kde-manifest` from the fixed `anland-kde-packages` rolling Release in `Goldzxcbug/droidspaces-package` by default, then installs the matching patched KWin/Xwayland packages for Debian 13, Ubuntu 26.04, Fedora 43/44, or Arch Linux on ARM64.
-
-```bash
-sudo ./scripts/install-anland-kde.sh
-```
-
-It also accepts `--1`, `--2`, or `--3` for GitHub, `gh-proxy.com`, or `ghproxy.net`; with no option, it probes the sources and prompts. Both the manifest and archive from a mirror are checked against GitHub API digests. Messages follow the system locale, and APT holds, DNF excludes, or Pacman `IgnorePkg` entries prevent upgrades from replacing the installed packages.
-
-To install packages published by a public fork, override only the repository. The fork must provide the fixed `anland-kde-packages` tag:
-
-```bash
-sudo ANLAND_RELEASE_REPOSITORY=owner/repository \
-  ./scripts/install-anland-kde.sh --1
-```
-
-The Anland host module, app, SELinux policy, bind mount, and Droidspaces permissions must still be configured as described in the [project Wayland and Anland setup](../README_english.md#wayland-and-anland-setup).
-
-## Anland GNOME Installer
-
-`install-anland-gnome.sh` reads `anland-gnome-manifest` from the fixed `anland-gnome-packages` rolling Release and installs patched Mutter/Xwayland runtime packages for Debian 13 or Ubuntu 26.04 on ARM64, skipping test and development packages in the archive. Its source selection, mirror digest checks, and arguments match the KDE installer; APT holds prevent upgrades from replacing the result.
-
-```bash
-sudo ./scripts/install-anland-gnome.sh
-```
-
-Override the GNOME repository variable when using packages from a public fork:
-
-```bash
-sudo ANLAND_RELEASE_REPOSITORY=owner/repository \
-  ./scripts/install-anland-gnome.sh --1
-```
 
 ## USB Manager Installer
 

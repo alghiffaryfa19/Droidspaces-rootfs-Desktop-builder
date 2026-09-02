@@ -12,7 +12,7 @@ profile_dir="${DROIDSPACES_DESKTOP_PROFILE_DIR:-/usr/local/lib/droidspaces/deskt
 config="$rootfs/etc/droidspaces-desktop.conf"
 
 [[ "$desktop" =~ ^(none|[a-z][a-z0-9-]*)$ ]] || { echo "无效的桌面：$desktop" >&2; exit 1; }
-case "$backend" in x11|anland-wayland) ;; *) echo "无效的显示后端：$backend" >&2; exit 1 ;; esac
+case "$backend" in x11|wayland) ;; *) echo "无效的显示后端：$backend" >&2; exit 1 ;; esac
 case "$autostart" in true|false) ;; *) echo "无效的桌面自启动值：$autostart" >&2; exit 1 ;; esac
 [[ -n "$username" ]] || { echo "必须指定桌面用户名" >&2; exit 1; }
 
@@ -20,11 +20,11 @@ if [[ "$desktop" == none && "$backend" != x11 ]]; then
     echo "不支持的桌面与显示后端组合：$desktop/$backend" >&2
     exit 1
 fi
-if [[ "$desktop" == kde-mobile && "$backend" != anland-wayland ]]; then
+if [[ "$desktop" == kde-mobile && "$backend" != wayland ]]; then
     echo "不支持的桌面与显示后端组合：$desktop/$backend" >&2
     exit 1
 fi
-if [[ "$desktop" == gnome && "$backend" != anland-wayland ]]; then
+if [[ "$desktop" == gnome && "$backend" != wayland ]]; then
     echo "不支持的桌面与显示后端组合：$desktop/$backend" >&2
     exit 1
 fi

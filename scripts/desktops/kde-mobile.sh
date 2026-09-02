@@ -11,12 +11,9 @@ configure_environment() {
         XCURSOR_SIZE=48
         WAYLAND_DISPLAY=wayland-0
         QT_QPA_PLATFORM=wayland
-        ANLAND=1
-        ANLAND_SOCKET=/run/display.sock
-        ANLAND_DRM_DEVICE=/dev/dri/renderD128
     )
 
-    [[ "$backend" == anland-wayland ]] || {
+    [[ "$backend" == wayland ]] || {
         echo "KDE mobile 显示后端无效：$backend" >&2
         return 1
     }

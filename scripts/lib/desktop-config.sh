@@ -23,7 +23,7 @@ desktop_label() {
 display_backend_normalize() {
     case "${1:-}" in
         X11|x11|'') printf '%s\n' x11 ;;
-        'Anland Wayland'|anland-wayland) printf '%s\n' anland-wayland ;;
+        'Wayland'|wayland) printf '%s\n' wayland ;;
         *) return 1 ;;
     esac
 }
@@ -31,7 +31,7 @@ display_backend_normalize() {
 display_backend_label() {
     case "${1:-}" in
         x11) printf '%s\n' X11 ;;
-        anland-wayland) printf '%s\n' Wayland ;;
+        wayland) printf '%s\n' Wayland ;;
         *) return 1 ;;
     esac
 }
@@ -74,13 +74,13 @@ desktop_backend_supported() {
     desktop_target_supported "$target" "$desktop" || return 1
     case "$desktop:$backend" in
         none:x11|kde:x11) return 0 ;;
-        kde:anland-wayland|kde-mobile:anland-wayland)
+        kde:wayland|kde-mobile:wayland)
             case "$target" in
                 Debian-13|Ubuntu-26|Fedora-43|Fedora-44|Arch) return 0 ;;
                 *) return 1 ;;
             esac
             ;;
-        gnome:anland-wayland)
+        gnome:wayland)
             case "$target" in
                 Debian-13|Ubuntu-26) return 0 ;;
                 *) return 1 ;;
@@ -102,13 +102,4 @@ desktop_wayland_targets_json() {
     esac
 }
 
-anland_archive_target() {
-    case "${1:-}" in
-        Debian-13) printf '%s\n' Debian13 ;;
-        Ubuntu-26) printf '%s\n' ubuntu2604 ;;
-        Fedora-43) printf '%s\n' Fedora43 ;;
-        Fedora-44) printf '%s\n' Fedora44 ;;
-        Arch) printf '%s\n' Arch ;;
-        *) return 1 ;;
-    esac
-}
+

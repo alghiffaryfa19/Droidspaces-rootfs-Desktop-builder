@@ -1,7 +1,7 @@
 #!/bin/bash
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$REPO_DIR/scripts/lib/desktop-config.sh"
-source "$REPO_DIR/scripts/lib/anland-build.sh"
+
 
 : "${VERSION:=dev}"
 TARGET_ARCH="aarch64"     # 产物命名使用的目标架构
@@ -35,28 +35,20 @@ while getopts "i:v:K:L:B:P:a:b:c:d:e:f:g:h:j:n:S:t:u:A:" opt; do
     S) ENABLE_systemd257="$OPTARG" ;; # systemd 257 旧内核兼容
     t) ENABLE_8gen2_wayland="$OPTARG" ;; # 修复骁龙8 Gen 2 Wayland 花屏
     u) USERNAME="$OPTARG" ;; 
-    A) LEGACY_ANLAND_INPUT="$OPTARG" ;; # 兼容旧参数
-    *) echo "用法: $0 -i <template.Dockerfile> -K <none|KDE|'KDE mobile'|GNOME> [-B <x11|anland-wayland>]" ; exit 1 ;;
+    *) echo "用法: $0 -i <template.Dockerfile> -K <none|KDE|'KDE mobile'|GNOME> [-B <x11|wayland>]" ; exit 1 ;;
   esac
 done
 
 : "${USERNAME:=Gold}"
-: "${ANLAND_RELEASE_REPOSITORY:=Goldzxcbug/droidspaces-package}"
-: "${ANLAND_PACKAGE_REVISION:=}"
+
 
 if ! DESKTOP="$(desktop_normalize "${DESKTOP_INPUT:-}")"; then
   echo "错误：-K 只支持 none、KDE、'KDE mobile' 或 GNOME。" >&2
   exit 1
 fi
-if [[ -n "${LEGACY_ANLAND_INPUT:-}" ]]; then
-  case "$LEGACY_ANLAND_INPUT" in
-    true) DISPLAY_BACKEND_INPUT="anland-wayland" ;;
-    false) DISPLAY_BACKEND_INPUT="x11" ;;
-    *) echo "错误：旧参数 -A 只支持 true 或 false。" >&2; exit 1 ;;
-  esac
-fi
+
 if ! DISPLAY_BACKEND="$(display_backend_normalize "$DISPLAY_BACKEND_INPUT")"; then
-  echo "错误：-B 只支持 x11 或 anland-wayland。" >&2
+  echo "错误：-B 只支持 x11 或 wayland。" >&2
   exit 1
 fi
 case "$DESKTOP_AUTOSTART" in true|false) ;; *) echo "错误：-L 只支持 true 或 false。" >&2; exit 1 ;; esac
@@ -83,12 +75,11 @@ case "$ENABLE_systemd257" in
 esac
 
 if [[ "$DESKTOP" == kde-mobile || "$DESKTOP" == gnome ]]; then
-  DISPLAY_BACKEND="anland-wayland"
+  DISPLAY_BACKEND="wayland"
 fi
-if [[ "$DISPLAY_BACKEND" == anland-wayland ]]; then
+if [[ "$DISPLAY_BACKEND" == wayland ]]; then
   PulseAudio="none"
 fi
-ANLAND_PACKAGE_FAMILY="$(anland_package_family "$DESKTOP" "$DISPLAY_BACKEND" || true)"
 
 # 校验：检查是否传递了 Dockerfile 模板文件
 if [ -z "$DOCKERFILE" ]; then
@@ -133,16 +124,7 @@ echo " 显示后端：$DISPLAY_BACKEND"
 echo " 桌面自启动：$DESKTOP_AUTOSTART"
 echo "========================================================="
 
-if [ -n "$ANLAND_PACKAGE_FAMILY" ]; then
-  if ! anland_prepare_release "$ANLAND_PACKAGE_FAMILY" "$ANLAND_RELEASE_REPOSITORY" "$ANLAND_PACKAGE_REVISION"; then
-    exit 1
-  fi
-  ANLAND_RELEASE_TAG="$ANLAND_RESOLVED_RELEASE_TAG"
-  ANLAND_PACKAGE_REVISION="$ANLAND_RESOLVED_REVISION"
-  echo " Anland ${ANLAND_PACKAGE_FAMILY^^} 包 Release：$ANLAND_RELEASE_REPOSITORY @ $ANLAND_RELEASE_TAG"
-else
-  ANLAND_PACKAGE_REVISION="disabled"
-fi
+
 
 # 1. 环境初始化（跨架构 QEMU 模式）
 echo "正在初始化 QEMU/binfmt 跨架构支持..."
@@ -194,8 +176,7 @@ docker buildx build \
   --build-arg ENABLE_nosnap_ARG="$ENABLE_nosnap" \
   --build-arg ENABLE_systemd257_ARG="$ENABLE_systemd257" \
   --build-arg ENABLE_8gen2_wayland_ARG="$ENABLE_8gen2_wayland" \
-  --build-arg ANLAND_RELEASE_REPOSITORY="$ANLAND_RELEASE_REPOSITORY" \
-  --build-arg ANLAND_PACKAGE_REVISION="$ANLAND_PACKAGE_REVISION" \
+
   --build-arg USERNAME="$USERNAME" \
   -f "$DOCKERFILE" \
   .

@@ -15,10 +15,6 @@
 | `install-mesa.sh` | ARM64 Linux 容器 | 安装最新版 Android 容器专用 Mesa 和 MediaCodec VA-API 驱动，并锁定 Mesa 包。 |
 | `install-hangover-wine.sh` | ARM64 Linux 容器 | 安装当前发行版对应的 Hangover Wine Release 包。 |
 | `install-winefonts.sh` | Linux 容器 | 安装 Wine 字体包并刷新 fontconfig 字体缓存。 |
-| `install-anland-kde.sh` | ARM64 Linux 容器 | 安装 Anland patched KWin/Xwayland Release 包，并锁定相关包。 |
-| `install-anland-gnome.sh` | ARM64 Debian/Ubuntu 容器 | 安装 Anland patched Mutter/Xwayland Release 包，并锁定相关包。 |
-| `install-anland-desktop.sh` | RootFS 构建环境 | 根据桌面 slug 分发到 KDE 或 GNOME Anland 安装器。 |
-| `lib/anland-build.sh` | RootFS 构建宿主 | 为 native/QEMU 构建统一解析 Anland 包族、Release tag 和 revision。 |
 | `install-usb-manager.sh` | Linux 容器 | 安装 Droidspaces USB Manager、发行版依赖、菜单入口和用户权限。 |
 | `systemd257.sh` | RootFS 构建环境 | 在需要时安装由包管理器管控的 systemd 257 完整包族，供旧 Android 内核使用。 |
 | `download-firmware` | Debian/Ubuntu 容器 | 安装并解压 `linux-firmware` 中的 `.zst` 固件。 |
@@ -97,40 +93,6 @@ sudo ./scripts/install-mesa.sh --3  # ghproxy.net
 4. 在中英文工作流入口的 `desktop` 下拉中加入显示名称。
 
 七个 Dockerfile 和核心工作流已经使用通用 profile 接口，普通 X11 桌面无需复制 Dockerfile。依赖 patched Wayland 包的 profile 还需在 `lib/anland-build.sh` 的 `anland_package_family` 中登记包族。
-
-## Anland KDE 安装器
-
-`install-anland-kde.sh` 默认从 `Goldzxcbug/droidspaces-package` 的固定滚动 Release `anland-kde-packages` 读取 `anland-kde-manifest`，为 Debian 13、Ubuntu 26.04、Fedora 43/44 或 Arch Linux ARM64 安装匹配版本的 patched KWin/Xwayland 包。
-
-```bash
-sudo ./scripts/install-anland-kde.sh
-```
-
-它同样支持 `--1`、`--2`、`--3` 选择 GitHub、`gh-proxy.com` 或 `ghproxy.net`；省略时测速后交互选择。镜像下载的清单与归档均使用 GitHub API digest 校验。脚本按系统 locale 输出中文或英文，并通过 APT hold、DNF exclude 或 Pacman `IgnorePkg` 防止系统更新覆盖安装结果。
-
-安装公开 Fork 发布的包时只需覆盖仓库；Fork 必须提供固定标签 `anland-kde-packages`：
-
-```bash
-sudo ANLAND_RELEASE_REPOSITORY=owner/repository \
-  ./scripts/install-anland-kde.sh --1
-```
-
-Anland 宿主模块、App、SELinux、绑定挂载和 Droidspaces 权限仍需按[项目主页的 Wayland 和 Anland 配置](../README.md#wayland-和-anland-配置)完成。
-
-## Anland GNOME 安装器
-
-`install-anland-gnome.sh` 默认从固定滚动 Release `anland-gnome-packages` 读取 `anland-gnome-manifest`，为 Debian 13 或 Ubuntu 26.04 ARM64 安装 patched Mutter/Xwayland 运行时包，并跳过归档中的测试/开发包。下载源选择、镜像 digest 校验和命令行参数与 KDE 安装器一致；安装结果通过 APT hold 防止升级覆盖。
-
-```bash
-sudo ./scripts/install-anland-gnome.sh
-```
-
-使用公开 Fork 的包时同时覆盖 GNOME 仓库变量：
-
-```bash
-sudo ANLAND_RELEASE_REPOSITORY=owner/repository \
-  ./scripts/install-anland-gnome.sh --1
-```
 
 ## USB Manager 安装器
 

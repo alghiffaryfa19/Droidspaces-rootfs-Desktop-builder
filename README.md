@@ -14,7 +14,6 @@
 - [使用 GitHub Actions 构建](#使用-github-actions-构建)
 - [导入 Droidspaces](#导入-droidspaces)
 - [启动桌面](#启动桌面)
-- [Wayland 和 Anland 配置](#wayland-和-anland-配置)
 - [Droidspaces USB Manager](#droidspaces-usb-manager)
 - [账户、密码和用户名修改](#账户密码和用户名修改)
 - [本地构建](#本地构建)
@@ -25,17 +24,17 @@
 
 ## 支持的系统
 
-| 构建目标 | 基础镜像 | 桌面 profile | Anland Wayland | 备注 |
+| 构建目标 | 基础镜像 | 桌面 profile | Wayland | 备注 |
 | --- | --- | --- | --- | --- |
-| `Debian-13` | `debian:trixie` | `none`、`KDE`、`KDE mobile`、`GNOME` | 支持 | GNOME 仅支持 Anland Wayland。 |
+| `Debian-13` | `debian:trixie` | `none`、`KDE`、`KDE mobile`、`GNOME` | 支持 |  |
 | `Ubuntu-24` | `ubuntu:24.04` | `none`、`KDE` | 不支持 | 支持 `nosnap`。 |
 | `Ubuntu-25` | `ubuntu:25.10` | `none`、`KDE` | 不支持 | 支持 `nosnap`。 |
-| `Ubuntu-26` | `ubuntu:26.04` | `none`、`KDE`、`KDE mobile`、`GNOME` | 支持 | 支持 `nosnap`，GNOME 仅支持 Anland Wayland。 |
+| `Ubuntu-26` | `ubuntu:26.04` | `none`、`KDE`、`KDE mobile`、`GNOME` | 支持 | 支持 `nosnap`， |
 | `Fedora-43` | `fedora:43` | `none`、`KDE`、`KDE mobile` | 支持 | 某些设备需要启用硬件访问。 |
 | `Fedora-44` | `fedora:44` | `none`、`KDE`、`KDE mobile` | 支持 | 某些设备需要启用硬件访问。 |
 | `Arch` | `ogarcia/archlinux` | `none`、`KDE`、`KDE mobile` | 支持 | 使用 ARM64 Arch patched KWin/Xwayland；当前不建议使用本项目的 QEMU/binfmt 跨架构方案。 |
 
-`all` 会按桌面/后端能力过滤 Dockerfile：GNOME 只构建 `Debian-13` 和 `Ubuntu-26`。`all-wayland` 在 `KDE` 和 `KDE mobile` 模式下构建五个 Wayland 目标，在 `GNOME` 模式下只构建上述两个目标；`KDE mobile` 和 `GNOME` 都会强制启用 Anland Wayland。
+`all` 会按桌面/后端能力过滤 Dockerfile：GNOME 只构建 `Debian-13` 和 `Ubuntu-26`。`all-wayland` 在 `KDE` 和 `KDE mobile` 模式下构建五个 Wayland 目标，在 `GNOME` 模式下只构建上述两个目标；`KDE mobile` 和 `GNOME` 都会强制启用 Wayland。
 
 ## 功能概览
 
@@ -58,7 +57,7 @@
 - 压缩工具：可选安装 `zip`、`unzip`、`7z`、`xz`、`tar`、`gzip` 等工具。
 - Docker：可选在 RootFS 内安装 Docker 相关软件包。
 - 旧内核 systemd 兼容：可选在 systemd 主版本高于 257 的 apt、dnf 或 pacman 发行版中安装由包管理器管控的完整 systemd 257 包族；只支持 `none` 和经过验证的普通 `KDE`，Debian 13 等已是 257 或更低版本时会自动跳过安装。
-- Wayland/Anland：通过独立的 [`droidspaces-package`](https://github.com/Goldzxcbug/droidspaces-package) 仓库提供 ARM64 patched KWin/Xwayland；GNOME 在 Debian 13、Ubuntu 26.04 上使用独立的 patched Mutter/Xwayland 包族。
+- Wayland：通过独立的 [`droidspaces-package`](https://github.com/Goldzxcbug/droidspaces-package) 仓库提供 ARM64 patched KWin/Xwayland；GNOME 在 Debian 13、Ubuntu 26.04 上使用独立的 patched Mutter/Xwayland 包族。
 - USB 设备管理：全部发行版内置 Droidspaces USB Manager，支持 USB 存储、ADB 设备节点、挂载、卸载和系统托盘。
 - Release 自动发布：构建完成后会把 RootFS `.tar.xz` 上传到 GitHub Release。
 
@@ -72,7 +71,7 @@ GitHub Actions 的主要输入项如下：
 | 自定义用户名 (`custom_username`) | 1–32 位字母、数字、`_`、`-`，以字母或 `_` 开头 | `Gold` | RootFS 默认用户。 |
 | 桌面选择 (`desktop`) | `none`、`KDE`、`KDE mobile`、`GNOME` | `KDE` | 选择命令行环境或当前提供的桌面 profile。 |
 | 桌面开机自启动 (`desktop_autostart`) | `true`、`false` | `true` | 是否创建统一的桌面自启动 systemd 服务。选择 `none` 时必须关闭。 |
-| 显示后端 (`display_backend`) | `x11`、`anland-wayland` | `anland-wayland` | KDE Mobile 和 GNOME 会强制使用 `anland-wayland`；GNOME 不提供 X11 构建。 |
+| 显示后端 (`display_backend`) | `x11`、`wayland` | `wayland` | KDE Mobile 和 GNOME 会强制使用 `wayland`；GNOME 不提供 X11 构建。 |
 | PulseAudio 音频转发 (`PulseAudio`) | `socket`、`tcp`、`none` | `socket` | X11 模式下的音频转发方式。启用 Anland 时会被强制改为 `none`。 |
 | 使用中文语言和时区 (`enable_zh_tz`) | `true`、`false` | 中文工作流默认为 `true` | 启用中文 locale 并设置上海时区。 |
 | 高通骁龙 GPU 支持 (`enable_mesa`) | `true`、`false` | `true` | 启用高通 GPU/Mesa 相关支持。 |
@@ -95,7 +94,7 @@ GitHub Actions 的主要输入项如下：
 | `none` | 不安装桌面，只保留命令行环境。 | 需要轻量 RootFS、SSH、开发环境或自定义桌面的用户。 |
 | `KDE` | KDE 桌面，包含系统工具、监控、文件管理和多媒体组件。 | 日常桌面使用。 |
 | `KDE mobile` | KDE Plasma Mobile 相关组件。 | 手机屏幕和触控优先场景；会强制启用 Wayland。 |
-| `GNOME` | GNOME Shell、控制中心、文件管理和常用桌面组件。 | Debian 13 或 Ubuntu 26 的 Anland Wayland 桌面；不支持 X11。 |
+| `GNOME` | GNOME Shell、控制中心、文件管理和常用桌面组件。 | Debian 13 或 Ubuntu 26 的 Wayland 桌面；不支持 X11。 |
 
 音频模式说明：
 
@@ -103,13 +102,13 @@ GitHub Actions 的主要输入项如下：
 | --- | --- |
 | `socket` | 使用 Unix socket 转发 PulseAudio。通常延迟更低，推荐在 X11 模式下使用。 |
 | `tcp` | 使用 `127.0.0.1:4713` 转发 PulseAudio。兼容性较直观，但暴露面更大。 |
-| `none` | 不配置 PulseAudio。Anland 模式下会自动使用此模式，因为 Anland App 自带音频路径。 |
+| `none` | 不配置 PulseAudio。Anland 模式下会自动使用此模式， |
 
 ### systemd 257 旧内核兼容
 
 开启 `enable_systemd257` 后，RootFS 会运行 `scripts/systemd257.sh`。脚本会先检测发行版现有的 systemd 主版本：
 
-- 支持白名单只有 `none` 和普通 `KDE`：普通 KDE 保留 X11/Anland Wayland 与桌面自启动设置；GNOME、KDE Mobile 及未来新增但未经验证的桌面会回退到 `none`，在 `all-wayland` 下则直接拒绝；
+- 支持白名单只有 `none` 和普通 `KDE`：普通 KDE 保留 X11/Wayland 与桌面自启动设置；GNOME、KDE Mobile 及未来新增但未经验证的桌面会回退到 `none`，在 `all-wayland` 下则直接拒绝；
 - 257 或更低版本（例如 Debian 13、Ubuntu 24.04）直接跳过；
 - 高于 257 的 apt、dnf 和 pacman 系统从 `droidspaces-package` 的冻结兼容 Release `systemd257-packages` 安装对应发行版的完整 systemd 257 包族；后续包族先发布到不可变标签，再由 RootFS 一次性更新标签与校验元数据；
 - 安装由发行版包管理器完成；APT 事务禁止删除任何现有包，安装完成后锁定 systemd 相关软件包，防止后续升级覆盖兼容版本。
@@ -123,7 +122,7 @@ GitHub Actions 的主要输入项如下：
 3. 选择中文工作流 `编译并发布 Droidspaces RootFS`，或英文工作流 `Build and Release Droidspaces RootFS`。
 4. 点击 `Run workflow`。
 5. 选择发行版、桌面 profile、显示后端、用户名和功能开关。
-6. 如果要使用 Wayland/Anland，选择 `display_backend=anland-wayland`；支持 Debian 13、Ubuntu 26、Fedora 43/44 和 Arch。
+6. 如果要使用 Wayland，选择 `display_backend=wayland`；支持 Debian 13、Ubuntu 26、Fedora 43/44 和 Arch。
 7. 默认直接使用 `Goldzxcbug/droidspaces-package`。若要使用你 Fork 的包仓库，在 `wayland_package_repository` 填写公开的 `owner/repository`；RootFS 不会比较两个仓库谁更新。
 8. 如需重新构建 patched KWin/Xwayland 或 Mutter/Xwayland 包，先在对应包仓库运行相应的 Anland 软件包工作流。
 9. 等待 RootFS Actions 完成，然后打开 `Releases` 页面下载生成的 `.tar.xz`。
@@ -143,7 +142,7 @@ Release 通常包含：
 5. Fedora 某些设备需要开启硬件访问，否则可能出现桌面闪屏或崩溃。
 6. Arch 建议宿主内核版本为 5.10 或更新。
 7. 如果使用 X11 模式，准备好 Termux:X11。
-8. 如果使用 Wayland/Anland 模式，按本文的 Wayland 和 Anland 配置完成宿主侧准备。
+8. 如果使用 Wayland 模式，按本文的 Wayland 和 Anland 配置完成宿主侧准备。
 
 ## 启动桌面
 
@@ -152,9 +151,9 @@ Release 通常包含：
 | 桌面模式 | 服务文件 | 启动命令 |
 | --- | --- | --- |
 | KDE + X11 | `desktop-session.service` | `DISPLAY=:5 startplasma-x11` |
-| KDE + Anland Wayland | `desktop-session.service` | `startplasma-wayland` |
-| KDE Mobile + Anland Wayland | `desktop-session.service` | `startplasmamobile` |
-| GNOME + Anland Wayland | `desktop-session.service` | `gnome-session --session=gnome`（构建时将 GNOME 会话变量写入 `/etc/environment`） |
+| KDE + Wayland | `desktop-session.service` | `startplasma-wayland` |
+| KDE Mobile + Wayland | `desktop-session.service` | `startplasmamobile` |
+| GNOME + Wayland | `desktop-session.service` | `gnome-session --session=gnome`（构建时将 GNOME 会话变量写入 `/etc/environment`） |
 
 该服务以 UID 1000 用户运行并读取 `/etc/environment`。桌面进程异常退出时会在 2 秒后自动重启；如果 60 秒内启动失败超过 5 次，systemd 会暂时停止重试，防止形成崩溃循环。正常退出不会触发自动重启。
 
@@ -177,17 +176,14 @@ startplasma-x11
 
 自启动的实际效果仍取决于 Droidspaces 的 systemd、权限和显示后端配置。如果自启动没有拉起桌面，可以进入容器后执行 `startplasma-x11` 排查。
 
-### Wayland/Anland 模式
+### Wayland 模式
 
-Wayland/Anland 模式适用于选择 `display_backend=anland-wayland` 的 Debian 13、Ubuntu 26、Fedora 43/44 和 Arch 构建。KDE 和 KDE Mobile profile 写入：
+Wayland 模式适用于选择 `display_backend=wayland` 的 Debian 13、Ubuntu 26、Fedora 43/44 和 Arch 构建。KDE 和 KDE Mobile profile 写入：
 
 ```text
 XCURSOR_SIZE=48
 WAYLAND_DISPLAY=wayland-0
 QT_QPA_PLATFORM=wayland
-ANLAND=1
-ANLAND_SOCKET=/run/display.sock
-ANLAND_DRM_DEVICE=/dev/dri/renderD128
 ```
 
 完成宿主侧 Anland 配置后，在容器内执行：
@@ -210,12 +206,7 @@ XDG_SESSION_TYPE=wayland
 XDG_CURRENT_DESKTOP=GNOME
 XDG_SESSION_DESKTOP=gnome
 GNOME_SHELL_SESSION_MODE=gnome
-WAYLAND_DISPLAY=wayland-anland
-GNOME_WAYLAND_DISPLAY=wayland-anland
-QT_QPA_PLATFORM=wayland
-ANLAND=1
-ANLAND_SOCKET=/run/display.sock
-ANLAND_DRM_DEVICE=/dev/dri/renderD128
+GNOME_QT_QPA_PLATFORM=wayland
 ```
 
 对应的手动启动命令为：
@@ -224,24 +215,6 @@ ANLAND_DRM_DEVICE=/dev/dri/renderD128
 gnome-session --session=gnome
 ```
 
-## Wayland 和 Anland 配置
-
-Wayland 支持依赖 [anland](https://github.com/superturtlee/anland) 和 [`droidspaces-package`](https://github.com/Goldzxcbug/droidspaces-package) Release 中的预编译包。KDE 使用 patched KWin/Xwayland，GNOME 使用 patched Mutter/Xwayland。GNOME 仅覆盖 Debian 13 与 Ubuntu 26；包的构建、更新和固定滚动 Release 均由独立包仓库维护。
-
-### 一键安装 Anland KDE Release 包
-
-`scripts/install-anland-kde.sh` 会自动识别 ARM64 发行版，默认从 `Goldzxcbug/droidspaces-package` 的固定滚动 Release 安装匹配的 patched KWin/Xwayland 包，并锁定相关软件包。支持的系统、下载镜像、完整性校验、参数和独立安装方法已移至 [scripts 目录说明](scripts/README.md#anland-kde-安装器)。
-
-从仓库根目录运行：
-
-```bash
-sudo ./scripts/install-anland-kde.sh
-```
-
-GNOME 对应的安装器只支持 Debian 13 与 Ubuntu 26 ARM64，并读取固定的 `anland-gnome-packages` Release：
-
-```bash
-sudo ./scripts/install-anland-gnome.sh
 ```
 
 推荐构建选项：
@@ -251,12 +224,10 @@ sudo ./scripts/install-anland-gnome.sh
 | `build_target` | `Ubuntu-26` |
 | `desktop` | `KDE`、`KDE mobile` 或 `GNOME` |
 | `desktop_autostart` | `true` |
-| `display_backend` | `anland-wayland` |
-| `PulseAudio` | 无需手动设置，启用 Anland 后会变为 `none` |
+| `display_backend` | `wayland` |
 
 宿主侧配置步骤：
 
-1. 从 [anland Releases](https://github.com/superturtlee/anland/releases) 下载 `virtual-drm-daemon.zip`，刷入后重启设备。
 2. 从同一 Release 下载并安装 `app-debug.apk`。
 3. 导入 Droidspaces 容器时开启硬件访问。
 4. 开启 SELinux 宽容模式，或使用后文的精确 SELinux 策略修补。
@@ -337,7 +308,7 @@ chmod +x build_rootfs-qemu-aarch64.sh
   -v local \
   -K KDE \
   -L true \
-  -B anland-wayland \
+  -B wayland \
   -P none \
   -g true \
   -a false \
@@ -394,16 +365,12 @@ sudo download-firmware
 │   │   ├── kde.sh
 │   │   └── kde-mobile.sh
 │   ├── lib/
-│   │   ├── anland-build.sh
-│   │   └── desktop-config.sh
+│   │   │   └── desktop-config.sh
 │   ├── start/
 │   │   └── desktop-session.service
 │   ├── bashrc.sh
 │   ├── download-firmware
 │   ├── install-usb-manager.sh
-│   ├── install-anland-desktop.sh
-│   ├── install-anland-gnome.sh
-│   ├── install-anland-kde.sh
 │   ├── install-mesa.sh
 │   ├── nosnap.sh
 │   └── systemd257.sh
@@ -416,19 +383,17 @@ sudo download-firmware
     └── build-rootfs-releases.yml
 ```
 
-KDE 与 GNOME Wayland 包的构建工作流和固定滚动 Release 已移到 [`droidspaces-package`](https://github.com/Goldzxcbug/droidspaces-package)。RootFS 根据桌面读取 `anland-kde-packages` 或 `anland-gnome-packages`，不会因 RootFS 仓库被 Fork 而自动改用 Fork。需要自维护软件包时，应在包仓库 Fork 中生成完整的同名 Release，再修改 `wayland_package_repository`。
 
 ## 已知限制
 
-- Wayland/Anland 当前覆盖 Debian 13、Ubuntu 26、Fedora 43/44 和 Arch。
+- Wayland 当前覆盖 Debian 13、Ubuntu 26、Fedora 43/44 和 Arch。
 - Ubuntu 24 和 Ubuntu 25 当前按 X11 路径使用。
 - `KDE mobile` 模式支持 Debian 13、Ubuntu 26、Fedora 43/44 和 Arch。
-- `GNOME` 仅支持 Debian 13、Ubuntu 26 和 Anland Wayland，不支持 X11。
-- 选择 `anland-wayland` 后，工作流会关闭 PulseAudio 转发，因为 Anland App 自带音频路径。
+- `GNOME` 仅支持 Debian 13、Ubuntu 26 和 Wayland，不支持 X11。
+- 选择 `wayland` 后，工作流会关闭 PulseAudio 转发。
 - Fedora 在部分设备上需要硬件访问，否则可能闪屏或崩溃。
 - Ubuntu 和 Debian 在未启用 `noseccomp` 或内核缺少 `USER_NS` 时，可能出现卡顿。
 - 默认密码为 `1234`，导入后应立即修改。
-- 本项目内置的预编译 Wayland 包与上游 anland 的兼容性取决于构建时的上游状态。
 
 ## 致谢
 
@@ -436,5 +401,4 @@ KDE 与 GNOME Wayland 包的构建工作流和固定滚动 Release 已移到 [`d
 - [mesa-for-android-container](https://github.com/lfdevs/mesa-for-android-container)：高通 Snapdragon GPU 驱动支持。
 - [droidspaces-media-decode](https://github.com/Re-s/droidspaces-media-decode)：基于 Android MediaCodec 的容器 VA-API 硬件解码驱动。
 - [TMOE](https://github.com/2moe/tmoe)：容器内管理工具。
-- [anland](https://github.com/superturtlee/anland)：Wayland 显示后端和 patched KDE 相关工作。
 - [Droidspaces-USB-Manager](https://github.com/Yizhou147/Droidspaces-USB-Manager)：适用于Droidspaces 的 USB 存储和 ADB 设备管理工具。

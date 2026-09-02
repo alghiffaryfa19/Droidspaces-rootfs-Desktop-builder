@@ -861,7 +861,7 @@ write_dnf_config_with_systemd_hold() {
         }
       }
 
-      # DNF 将 exclude 与 excludepkgs 视为同一追加列表。像 Anland/Mesa 一样，
+      # DNF 将 exclude 与 excludepkgs 视为同一追加列表。像 Mesa 一样，
       # 若另一种键已存在则使用不同的键，避免写入重复键或改动别的托管块。
       if (saw_exclude && !saw_excludepkgs) {
         target_option = "excludepkgs"

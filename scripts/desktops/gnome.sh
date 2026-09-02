@@ -13,15 +13,10 @@ configure_environment() {
         XDG_CURRENT_DESKTOP=GNOME
         XDG_SESSION_DESKTOP=gnome
         GNOME_SHELL_SESSION_MODE=gnome
-        WAYLAND_DISPLAY=wayland-anland
-        GNOME_WAYLAND_DISPLAY=wayland-anland
-        QT_QPA_PLATFORM=wayland
-        ANLAND=1
-        ANLAND_SOCKET=/run/display.sock
-        ANLAND_DRM_DEVICE=/dev/dri/renderD128
+        GNOME_        QT_QPA_PLATFORM=wayland
     )
 
-    [[ "$backend" == anland-wayland ]] || {
+    [[ "$backend" == wayland ]] || {
         echo "GNOME 显示后端无效：$backend" >&2
         return 1
     }

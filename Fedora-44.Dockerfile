@@ -17,8 +17,6 @@ ARG DISPLAY_BACKEND
 ARG ENABLE_8gen2_wayland_ARG
 ARG ENABLE_systemd257_ARG
 ARG USERNAME
-ARG ANLAND_RELEASE_REPOSITORY=Goldzxcbug/droidspaces-package
-ARG ANLAND_PACKAGE_REVISION=unknown
 ######################################################
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -26,8 +24,6 @@ ENV DEBIAN_FRONTEND=noninteractive
 # 通用 Droidspaces USB Manager 安装器
 COPY scripts/install-usb-manager.sh /usr/local/sbin/install-droidspaces-usb-manager
 COPY scripts/systemd257.sh /usr/local/sbin/systemd257
-COPY scripts/install-anland-kde.sh /usr/local/sbin/install-anland-kde
-COPY scripts/install-anland-gnome.sh /usr/local/sbin/install-anland-gnome
 COPY scripts/install-mesa.sh /usr/local/sbin/install-mesa
 COPY scripts/install-hangover-wine.sh /usr/local/sbin/install-hangover-wine
 COPY scripts/install-winefonts.sh /usr/local/sbin/install-winefonts
@@ -42,7 +38,7 @@ RUN echo "max_parallel_downloads=10" >> /etc/dnf/dnf.conf && \
     echo "fastestmirror=True" >> /etc/dnf/dnf.conf && \
     echo "defaultyes=True" >> /etc/dnf/dnf.conf
 
-RUN chmod +x /usr/local/sbin/install-anland-* /usr/local/sbin/install-mesa /usr/local/sbin/install-hangover-wine /usr/local/sbin/install-winefonts /usr/local/sbin/install-desktop /usr/local/sbin/configure-desktop /usr/local/bin/droidspaces-tui /usr/local/bin/start-desktop-session /usr/local/lib/droidspaces/desktops/*.sh && \
+RUN chmod +x /usr/local/sbin/install-mesa /usr/local/sbin/install-hangover-wine /usr/local/sbin/install-winefonts /usr/local/sbin/install-desktop /usr/local/sbin/configure-desktop /usr/local/bin/droidspaces-tui /usr/local/bin/start-desktop-session /usr/local/lib/droidspaces/desktops/*.sh && \
     ln -s droidspaces-tui /usr/local/bin/dstui && \
     ln -s droidspaces-tui /usr/local/bin/ds-tui && \
     dnf install -y --setopt=install_weak_deps=False \
@@ -89,13 +85,6 @@ RUN chmod +x /usr/local/sbin/install-anland-* /usr/local/sbin/install-mesa /usr/
     dnf clean all && \
     rm -rf /var/cache/dnf
 
-############################################## Anland Wayland 支持 ################################################
-RUN if [ "$DISPLAY_BACKEND" = "anland-wayland" ]; then \
-        echo "--> [开启] 正在安装 $DESKTOP 的 Anland 包 (${ANLAND_PACKAGE_REVISION})..." && \
-        ANLAND_RELEASE_REPOSITORY="$ANLAND_RELEASE_REPOSITORY" \
-        /usr/local/sbin/install-anland-kde --1 && \
-        echo "--> [开启] $DESKTOP 的 Anland 支持已安装"; \
-    fi
 
 # 强制配置使用 iptables-legacy（兼容 Android 内核的硬性要求）
 RUN ln -sf /usr/sbin/iptables-legacy /usr/sbin/iptables && \
@@ -128,7 +117,7 @@ RUN /usr/local/sbin/install-droidspaces-usb-manager --user "${USERNAME}"
 # 初始化环境变量文件；桌面专属变量由对应 profile 管理。
 RUN : > /etc/environment
 
-RUN if [ "$ENABLE_mesa_ARG" = "true" ] && [ "$DISPLAY_BACKEND" = "anland-wayland" ]; then \
+RUN if [ "$ENABLE_mesa_ARG" = "true" ] && [ "$DISPLAY_BACKEND" = "wayland" ]; then \
         echo "MESA_LOADER_DRIVER_OVERRIDE=kgsl" >> /etc/environment; \
         echo "GALLIUM_DRIVER=kgsl" >> /etc/environment; \
         echo "FD_FORCE_KGSL=1" >> /etc/environment; \
@@ -172,7 +161,7 @@ GLFW_IM_MODULE=fcitx
 EOF
     fi
 
-    if [ "$ENABLE_mesa_ARG" = "true" ] && [ "$DISPLAY_BACKEND" != "anland-wayland" ] ; then
+    if [ "$ENABLE_mesa_ARG" = "true" ] && [ "$DISPLAY_BACKEND" != "wayland" ] ; then
         cat <<'EOF' >> /etc/environment
 MESA_LOADER_DRIVER_OVERRIDE=kgsl
 TU_DEBUG=noconform

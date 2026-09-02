@@ -18,7 +18,7 @@ readonly SOURCE_PROBE_TIMEOUT_SECONDS=2
 readonly GITHUB_RELEASE_URL="https://github.com"
 readonly GH_PROXY_RELEASE_URL="https://gh-proxy.com/https://github.com"
 readonly CNB_RELEASE_URL="https://cnb.cool"
-readonly APT_HOLD_PREFERENCES="/etc/apt/preferences.d/hold-anland-package"
+readonly APT_HOLD_PREFERENCES="/etc/apt/preferences.d/hold-mesa-package"
 readonly DNF_CONFIG="/etc/dnf/dnf.conf"
 readonly DNF_MANAGED_BEGIN="# BEGIN install-mesa package holds"
 readonly DNF_MANAGED_END="# END install-mesa package holds"
@@ -434,7 +434,7 @@ probe_download_source() {
     local -a probe_command
 
     probe_url="$(download_url_for_source "$source")" || return 1
-    # 仅探测第一个字节；Mesa 资产远大于 install-anland-kde.sh 测速使用的清单。
+    # 仅探测第一个字节；Mesa 资产远大于 install-mesa.sh 测速使用的清单。
     if command -v curl >/dev/null 2>&1; then
         if latency="$(curl -fsSL --range 0-0 \
             --connect-timeout "$SOURCE_PROBE_TIMEOUT_SECONDS" \
@@ -822,7 +822,7 @@ configure_apt_holds() {
 
     install -d -m 0755 "$(dirname "$preferences_file")"
     cat > "$preferences_file" <<'EOF'
-# /etc/apt/preferences.d/hold-anland-package
+# /etc/apt/preferences.d/hold-mesa-package
 
 Package: libegl-mesa0 libgbm1 libgl1-mesa-dri libglx-mesa0 mesa-libgallium mesa-vulkan-drivers
 Pin: release *
@@ -880,7 +880,7 @@ write_dnf_config_with_managed_block() {
         "$input_file" "$stripped_file" "$DNF_MANAGED_BEGIN" "$DNF_MANAGED_END" || return 1
 
     # DNF 会把兼容 yum 的 exclude 别名与 excludepkgs 绑定到同一个追加列表。
-    # 使用不同键可以避免 INI 解析器替换重复键，同时兼容 Anland 的
+    # 使用不同键可以避免 INI 解析器替换重复键，同时兼容 Mesa 的
     # excludepkgs 规则。
     awk -v begin="$DNF_MANAGED_BEGIN" -v end="$DNF_MANAGED_END" \
         -v excludes="$excluded_packages" '

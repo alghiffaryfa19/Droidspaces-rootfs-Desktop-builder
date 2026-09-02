@@ -13,13 +13,10 @@ configure_environment() {
         x11)
             assignments+=(DISPLAY=:5)
             ;;
-        anland-wayland)
+        wayland)
             assignments+=(
                 WAYLAND_DISPLAY=wayland-0
                 QT_QPA_PLATFORM=wayland
-                ANLAND=1
-                ANLAND_SOCKET=/run/display.sock
-                ANLAND_DRM_DEVICE=/dev/dri/renderD128
             )
             case "$ID" in
                 arch|archarm|archlinux)

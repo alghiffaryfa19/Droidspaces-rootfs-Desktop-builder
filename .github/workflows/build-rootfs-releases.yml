@@ -39,13 +39,13 @@ on:
         type: boolean
         default: true
       display_backend:
-        description: 显示后端（KDE mobile/GNOME 固定使用 Anland Wayland）
+        description: 显示后端
         required: true
         type: choice
-        default: anland-wayland
+        default: wayland
         options:
           - x11
-          - anland-wayland
+          - wayland
       PulseAudio:
         description: PulseAudio 音频转发
         required: true
@@ -115,11 +115,7 @@ on:
         required: true
         type: boolean
         default: false
-      wayland_package_repository:
-        description: Wayland 软件包仓库（公开的 owner/repository）
-        required: true
-        type: string
-        default: Goldzxcbug/droidspaces-package
+
 
 permissions:
   contents: write
@@ -148,4 +144,3 @@ jobs:
       enable_kfgj: ${{ inputs.enable_kfgj }}
       enable_zip: ${{ inputs.enable_zip }}
       enable_docker: ${{ inputs.enable_docker }}
-      wayland_package_repository: ${{ inputs.wayland_package_repository }}

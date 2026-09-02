@@ -25,17 +25,17 @@ The goal is to reduce the amount of manual setup required to run a desktop Linux
 
 ## Supported Targets
 
-| Build target | Base image | Desktop profiles | Anland Wayland | Notes |
+| Build target | Base image | Desktop profiles | Wayland | Notes |
 | --- | --- | --- | --- | --- |
-| `Debian-13` | `debian:trixie` | `none`, `KDE`, `KDE mobile`, `GNOME` | Supported | GNOME is Anland Wayland-only. |
+| `Debian-13` | `debian:trixie` | `none`, `KDE`, `KDE mobile`, `GNOME` | Supported | GNOME is Wayland-only. |
 | `Ubuntu-24` | `ubuntu:24.04` | `none`, `KDE` | Not supported | Supports `nosnap`. |
 | `Ubuntu-25` | `ubuntu:25.10` | `none`, `KDE` | Not supported | Supports `nosnap`. |
-| `Ubuntu-26` | `ubuntu:26.04` | `none`, `KDE`, `KDE mobile`, `GNOME` | Supported | Supports `nosnap`; GNOME is Anland Wayland-only. |
+| `Ubuntu-26` | `ubuntu:26.04` | `none`, `KDE`, `KDE mobile`, `GNOME` | Supported | Supports `nosnap`; GNOME is Wayland-only. |
 | `Fedora-43` | `fedora:43` | `none`, `KDE`, `KDE mobile` | Supported | Some devices require hardware access to avoid flicker or crashes. |
 | `Fedora-44` | `fedora:44` | `none`, `KDE`, `KDE mobile` | Supported | Some devices require hardware access. |
 | `Arch` | `ogarcia/archlinux` | `none`, `KDE`, `KDE mobile` | Supported | Uses ARM64 Arch patched KWin/Xwayland; this project's QEMU/binfmt flow is not recommended for Arch at the moment. |
 
-`all` filters Dockerfile templates through the selected desktop/backend capabilities, so GNOME builds only `Debian-13` and `Ubuntu-26`. For KDE profiles, `all-wayland` builds all five Wayland targets; for GNOME, it builds those two targets. KDE Mobile and GNOME both force Anland Wayland.
+`all` filters Dockerfile templates through the selected desktop/backend capabilities, so GNOME builds only `Debian-13` and `Ubuntu-26`. For KDE profiles, `all-wayland` builds all five Wayland targets; for GNOME, it builds those two targets. KDE Mobile and GNOME both force Wayland.
 
 ## Feature Overview
 
@@ -57,7 +57,7 @@ The goal is to reduce the amount of manual setup required to run a desktop Linux
 - Optional compression utilities such as `zip`, `unzip`, `7z`, `xz`, `tar`, and `gzip`.
 - Optional Docker packages inside the RootFS.
 - Optional old-kernel systemd compatibility: on apt, dnf, or pacman targets whose systemd major version is above 257, install a complete package-manager-owned systemd 257 family; only `none` and verified standard `KDE` are supported, while Debian 13 and other 257-or-older systems skip installation automatically.
-- ARM64 Wayland/Anland support through the separate [`droidspaces-package`](https://github.com/Goldzxcbug/droidspaces-package) repository: patched KWin/Xwayland for KDE, plus patched Mutter/Xwayland for GNOME on Debian 13 and Ubuntu 26.04.
+- ARM64 Wayland support through the separate [`droidspaces-package`](https://github.com/Goldzxcbug/droidspaces-package) repository: patched KWin/Xwayland for KDE, plus patched Mutter/Xwayland for GNOME on Debian 13 and Ubuntu 26.04.
 - USB device management on every distribution through Droidspaces USB Manager, including USB storage, ADB device nodes, mounting, unmounting, and a system tray interface.
 - Automatic Release publishing with the RootFS `.tar.xz` files.
 
@@ -71,7 +71,7 @@ The main GitHub Actions inputs are:
 | Custom username (`custom_username`) | 1–32 letters, digits, `_`, or `-`; starts with a letter or `_` | `Gold` | Default user inside the RootFS. |
 | Desktop (`desktop`) | `none`, `KDE`, `KDE mobile`, `GNOME` | `KDE` | Selects the command-line environment or a currently available desktop profile. |
 | Desktop auto-start (`desktop_autostart`) | `true`, `false` | `true` | Creates the common desktop session service. It must be off for `none`. |
-| Display backend (`display_backend`) | `x11`, `anland-wayland` | `x11` | KDE Mobile and GNOME force `anland-wayland`; GNOME has no X11 build. |
+| Display backend (`display_backend`) | `x11`, `wayland` | `x11` | KDE Mobile and GNOME force `wayland`; GNOME has no X11 build. |
 | PulseAudio forwarding (`PulseAudio`) | `socket`, `tcp`, `none` | `socket` | Audio forwarding mode for X11 builds. It is forced to `none` when Anland is enabled. |
 | Chinese language and timezone (`enable_zh_tz`) | `true`, `false` | `false` in the English workflow | Enables Chinese locale and the Shanghai timezone. |
 | Qualcomm Snapdragon GPU support (`enable_mesa`) | `true`, `false` | `true` | Enables Qualcomm Snapdragon GPU and Mesa-related support. |
@@ -94,7 +94,7 @@ Desktop mode details:
 | `none` | Does not install a desktop. Keeps a command-line environment only. | Lightweight RootFS, SSH use, development environments, or custom desktop setups. |
 | `KDE` | KDE desktop with system tools, monitoring, file management, and multimedia components. | General desktop use. |
 | `KDE mobile` | KDE Plasma Mobile components. | Phone-screen and touch-first usage; forces Wayland in this project. |
-| `GNOME` | GNOME Shell, Settings, Files, and common desktop components. | Anland Wayland on Debian 13 or Ubuntu 26; X11 is not supported. |
+| `GNOME` | GNOME Shell, Settings, Files, and common desktop components. | Wayland on Debian 13 or Ubuntu 26; X11 is not supported. |
 
 Audio mode details:
 
@@ -102,13 +102,13 @@ Audio mode details:
 | --- | --- |
 | `socket` | Uses a Unix socket for PulseAudio forwarding. This is usually lower latency and is recommended for X11 mode. |
 | `tcp` | Uses `127.0.0.1:4713` for PulseAudio forwarding. It is straightforward to debug, but exposes a wider interface. |
-| `none` | Does not configure PulseAudio. Anland mode automatically uses this value because the Anland app provides its own audio path. |
+| `none` | Does not configure PulseAudio. Anland mode automatically uses this value  |
 
 ### systemd 257 old-kernel compatibility
 
 When `enable_systemd257` is enabled, the build runs `scripts/systemd257.sh`. The script first detects the installed systemd major version:
 
-- the allowlist contains only `none` and standard `KDE`: KDE keeps its X11/Anland Wayland and auto-start settings; GNOME, KDE Mobile, and future unverified desktops fall back to `none`, or are rejected under `all-wayland`;
+- the allowlist contains only `none` and standard `KDE`: KDE keeps its X11/Wayland and auto-start settings; GNOME, KDE Mobile, and future unverified desktops fall back to `none`, or are rejected under `all-wayland`;
 - systemd 257 or older (for example Debian 13 and Ubuntu 24.04) is skipped;
 - apt, dnf, and pacman systems above 257 install their complete systemd 257 package family from the frozen compatibility Release `systemd257-packages` in `droidspaces-package`; later package sets are published under immutable tags before the RootFS updates its tag and pinned verification metadata together;
 - installation is handled by the native package manager; APT is forbidden from removing existing packages, and systemd-related packages are locked so a later upgrade does not overwrite the compatibility version.
@@ -122,7 +122,7 @@ This option targets old Android kernels and is experimental. It adds substantial
 3. Select the Chinese workflow `编译并发布 Droidspaces RootFS` or the English workflow `Build and Release Droidspaces RootFS`.
 4. Click `Run workflow`.
 5. Choose the distribution, desktop profile, display backend, username, and feature toggles.
-6. For Wayland/Anland builds, choose `display_backend=anland-wayland`; it is supported on Debian 13, Ubuntu 26, Fedora 43/44, and Arch.
+6. For Wayland builds, choose `display_backend=wayland`; it is supported on Debian 13, Ubuntu 26, Fedora 43/44, and Arch.
 7. The default source is `Goldzxcbug/droidspaces-package`. To use your package fork, set `wayland_package_repository` to its public `owner/repository`; RootFS does not compare which repository is newer.
 8. To rebuild patched KWin/Xwayland or Mutter/Xwayland packages, run the corresponding Anland package workflow in the selected package repository.
 9. Wait for the RootFS workflow, then open its `Releases` page and download the generated `.tar.xz`.
@@ -142,7 +142,7 @@ The Release usually contains:
 5. For Fedora, some devices require hardware access. Without it, the desktop may flicker or crash.
 6. For Arch, kernel 5.10 or newer is recommended.
 7. For X11 mode, prepare Termux:X11.
-8. For Wayland/Anland mode, complete the host-side Anland setup described below.
+8. For Wayland mode, complete the host-side Anland setup described below.
 
 ## Start Desktop
 
@@ -151,9 +151,9 @@ When `desktop_autostart` is enabled, the build installs `desktop-session.service
 | Desktop mode | Service file | Start command |
 | --- | --- | --- |
 | KDE + X11 | `desktop-session.service` | `DISPLAY=:5 startplasma-x11` |
-| KDE + Anland Wayland | `desktop-session.service` | `startplasma-wayland` |
-| KDE Mobile + Anland Wayland | `desktop-session.service` | `startplasmamobile` |
-| GNOME + Anland Wayland | `desktop-session.service` | `gnome-session --session=gnome` (the build writes the GNOME session variables to `/etc/environment`) |
+| KDE + Wayland | `desktop-session.service` | `startplasma-wayland` |
+| KDE Mobile + Wayland | `desktop-session.service` | `startplasmamobile` |
+| GNOME + Wayland | `desktop-session.service` | `gnome-session --session=gnome` (the build writes the GNOME session variables to `/etc/environment`) |
 
 This service runs as UID 1000 and loads `/etc/environment`. If the desktop process fails, systemd restarts it after 2 seconds. If it fails more than 5 times within 60 seconds, systemd temporarily stops retrying to prevent a crash loop. A normal exit does not trigger a restart.
 
@@ -176,17 +176,14 @@ startplasma-x11
 
 The actual auto-start behavior still depends on Droidspaces systemd support, permissions, and the configured display backend. If the desktop does not start automatically, enter the container and run `startplasma-x11` for debugging.
 
-### Wayland/Anland Mode
+### Wayland Mode
 
-Wayland/Anland mode applies to Debian 13, Ubuntu 26, Fedora 43/44, and Arch builds with `display_backend=anland-wayland`. The KDE and KDE Mobile profiles write:
+Wayland mode applies to Debian 13, Ubuntu 26, Fedora 43/44, and Arch builds with `display_backend=wayland`. The KDE and KDE Mobile profiles write:
 
 ```text
 XCURSOR_SIZE=48
 WAYLAND_DISPLAY=wayland-0
 QT_QPA_PLATFORM=wayland
-ANLAND=1
-ANLAND_SOCKET=/run/display.sock
-ANLAND_DRM_DEVICE=/dev/dri/renderD128
 ```
 
 After completing the host-side Anland setup, run this inside the container:
@@ -209,12 +206,7 @@ XDG_SESSION_TYPE=wayland
 XDG_CURRENT_DESKTOP=GNOME
 XDG_SESSION_DESKTOP=gnome
 GNOME_SHELL_SESSION_MODE=gnome
-WAYLAND_DISPLAY=wayland-anland
-GNOME_WAYLAND_DISPLAY=wayland-anland
-QT_QPA_PLATFORM=wayland
-ANLAND=1
-ANLAND_SOCKET=/run/display.sock
-ANLAND_DRM_DEVICE=/dev/dri/renderD128
+GNOME_QT_QPA_PLATFORM=wayland
 ```
 
 The corresponding manual start command is:
@@ -227,20 +219,6 @@ gnome-session --session=gnome
 
 Wayland support depends on [anland](https://github.com/superturtlee/anland) and prebuilt packages published by [`droidspaces-package`](https://github.com/Goldzxcbug/droidspaces-package). KDE uses patched KWin/Xwayland, while GNOME uses patched Mutter/Xwayland and is limited to Debian 13 and Ubuntu 26. Package builds, updates, and fixed rolling Releases are maintained in the separate package repository.
 
-### One-Click Installation of Anland KDE Release Packages
-
-`scripts/install-anland-kde.sh` detects the ARM64 distribution, installs matching patched KWin/Xwayland packages from the fixed rolling Release in `Goldzxcbug/droidspaces-package` by default, and locks the related packages. Supported systems, download mirrors, integrity checks, options, and standalone installation details are documented in the [scripts directory guide](scripts/README_english.md#anland-kde-installer).
-
-Run it from the repository root:
-
-```bash
-sudo ./scripts/install-anland-kde.sh
-```
-
-The GNOME installer supports Debian 13 and Ubuntu 26 ARM64 and reads the fixed `anland-gnome-packages` Release:
-
-```bash
-sudo ./scripts/install-anland-gnome.sh
 ```
 
 Recommended build options:
@@ -250,12 +228,10 @@ Recommended build options:
 | `build_target` | `Ubuntu-26` |
 | `desktop` | `KDE`, `KDE mobile`, or `GNOME` |
 | `desktop_autostart` | `true` |
-| `display_backend` | `anland-wayland` |
-| `PulseAudio` | No manual setting required; it becomes `none` when Anland is enabled |
+| `display_backend` | `wayland` |
 
 Host-side setup:
 
-1. Download `virtual-drm-daemon.zip` from [anland Releases](https://github.com/superturtlee/anland/releases), flash it, and reboot the device.
 2. Download and install `app-debug.apk` from the same Release.
 3. Enable hardware access when importing the Droidspaces container.
 4. Enable SELinux permissive mode, or use the precise SELinux policy fix documented below.
@@ -336,7 +312,7 @@ chmod +x build_rootfs-qemu-aarch64.sh
   -v local \
   -K KDE \
   -L true \
-  -B anland-wayland \
+  -B wayland \
   -P none \
   -g true \
   -a false \
@@ -393,16 +369,12 @@ sudo download-firmware
 │   │   ├── kde.sh
 │   │   └── kde-mobile.sh
 │   ├── lib/
-│   │   ├── anland-build.sh
-│   │   └── desktop-config.sh
+│   │   │   └── desktop-config.sh
 │   ├── start/
 │   │   └── desktop-session.service
 │   ├── bashrc.sh
 │   ├── download-firmware
 │   ├── install-usb-manager.sh
-│   ├── install-anland-desktop.sh
-│   ├── install-anland-gnome.sh
-│   ├── install-anland-kde.sh
 │   ├── install-mesa.sh
 │   ├── nosnap.sh
 │   └── systemd257.sh
@@ -415,19 +387,17 @@ sudo download-firmware
     └── build-rootfs-releases.yml
 ```
 
-The KDE and GNOME Wayland package workflows and fixed rolling Releases live in [`droidspaces-package`](https://github.com/Goldzxcbug/droidspaces-package). RootFS reads `anland-kde-packages` or `anland-gnome-packages` according to the selected desktop and does not switch sources merely because the RootFS repository is a fork. To maintain custom packages, publish a complete same-name Release in a package-repository fork and set `wayland_package_repository` to it.
 
 ## Known Limitations
 
-- Wayland/Anland support covers Debian 13, Ubuntu 26, Fedora 43/44, and Arch.
+- Wayland support covers Debian 13, Ubuntu 26, Fedora 43/44, and Arch.
 - Ubuntu 24 and Ubuntu 25 currently use the X11 path.
 - `KDE mobile` mode is supported on Debian 13, Ubuntu 26, Fedora 43/44, and Arch.
-- `GNOME` supports only Debian 13 and Ubuntu 26 with Anland Wayland; X11 is not supported.
-- When `anland-wayland` is selected, the workflow disables PulseAudio forwarding because the Anland app provides its own audio path.
+- `GNOME` supports only Debian 13 and Ubuntu 26 with Wayland; X11 is not supported.
+- When `wayland` is selected, the workflow disables PulseAudio forwarding.
 - Fedora may require hardware access on some devices to avoid flicker or crashes.
 - Ubuntu and Debian may lag or freeze if `noseccomp` is disabled or the kernel lacks `USER_NS`.
 - The default password is `1234`; change it after importing the RootFS.
-- Compatibility between the bundled prebuilt Wayland packages and upstream anland depends on the upstream state at build time.
 
 ## Acknowledgements
 
@@ -435,5 +405,4 @@ The KDE and GNOME Wayland package workflows and fixed rolling Releases live in [
 - [mesa-for-android-container](https://github.com/lfdevs/mesa-for-android-container): Snapdragon GPU driver support.
 - [droidspaces-media-decode](https://github.com/Re-s/droidspaces-media-decode): Android MediaCodec-backed VA-API hardware decoding for containers.
 - [TMOE](https://github.com/2moe/tmoe): convenient management tooling inside the container.
-- [anland](https://github.com/superturtlee/anland): Wayland display backend and patched KDE work.
 - [Droidspaces-USB-Manager](https://github.com/Yizhou147/Droidspaces-USB-Manager): USB storage and ADB device management for Droidspaces.

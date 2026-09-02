@@ -17,8 +17,6 @@ ARG DISPLAY_BACKEND
 ARG ENABLE_8gen2_wayland_ARG
 ARG ENABLE_systemd257_ARG
 ARG USERNAME
-ARG ANLAND_RELEASE_REPOSITORY=Goldzxcbug/droidspaces-package
-ARG ANLAND_PACKAGE_REVISION=unknown
 ######################################################
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -45,9 +43,6 @@ COPY scripts/bashrc.sh /etc/profile.d/ds-aliases.sh
 # 通用 Droidspaces USB Manager 安装器
 COPY scripts/install-usb-manager.sh /usr/local/sbin/install-droidspaces-usb-manager
 COPY scripts/systemd257.sh /usr/local/sbin/systemd257
-COPY scripts/install-anland-kde.sh /usr/local/sbin/install-anland-kde
-COPY scripts/install-anland-gnome.sh /usr/local/sbin/install-anland-gnome
-COPY scripts/install-anland-desktop.sh /usr/local/sbin/install-anland-desktop
 COPY scripts/install-mesa.sh /usr/local/sbin/install-mesa
 COPY scripts/install-hangover-wine.sh /usr/local/sbin/install-hangover-wine
 COPY scripts/install-winefonts.sh /usr/local/sbin/install-winefonts
@@ -58,7 +53,7 @@ COPY scripts/start-desktop-session.sh /usr/local/bin/start-desktop-session
 COPY scripts/desktops/ /usr/local/lib/droidspaces/desktops/
 
 # 赋予相关脚本可执行权限
-RUN chmod +x /usr/local/bin/download-firmware /etc/profile.d/ds-aliases.sh /usr/local/sbin/install-anland-* /usr/local/sbin/install-mesa /usr/local/sbin/install-hangover-wine /usr/local/sbin/install-winefonts /usr/local/sbin/install-desktop /usr/local/sbin/configure-desktop /usr/local/bin/droidspaces-tui /usr/local/bin/start-desktop-session /usr/local/lib/droidspaces/desktops/*.sh && \
+RUN chmod +x /usr/local/bin/download-firmware /etc/profile.d/ds-aliases.sh /usr/local/sbin/install-mesa /usr/local/sbin/install-hangover-wine /usr/local/sbin/install-winefonts /usr/local/sbin/install-desktop /usr/local/sbin/configure-desktop /usr/local/bin/droidspaces-tui /usr/local/bin/start-desktop-session /usr/local/lib/droidspaces/desktops/*.sh && \
     ln -s droidspaces-tui /usr/local/bin/dstui && \
     ln -s droidspaces-tui /usr/local/bin/ds-tui
 
@@ -75,14 +70,6 @@ RUN apt-get update && \
     # 核心内核模块支持
     kmod tzdata tar && \
     /usr/local/sbin/install-desktop "$DESKTOP" && \
-    ############################################## Anland Wayland 支持 ################################################
-    if [ "$DISPLAY_BACKEND" = "anland-wayland" ]; then \
-        echo "--> [开启] 正在安装 $DESKTOP 的 Anland 包 (${ANLAND_PACKAGE_REVISION})..." && \
-        ANLAND_RELEASE_REPOSITORY="$ANLAND_RELEASE_REPOSITORY" \
-        /usr/local/sbin/install-anland-desktop "$DESKTOP" --1 && \
-        echo "--> [开启] $DESKTOP 的 Anland 支持已安装"; \
-    fi && \
-    ######################################################################################################
     #输入法 fcitx5 (可选)
     if [ "$ENABLE_srf_ARG" = "true" ]; then \
         apt-get install -y fcitx5; \
@@ -146,7 +133,7 @@ RUN /usr/local/sbin/install-droidspaces-usb-manager --user "${USERNAME}"
 # 初始化环境变量文件；桌面专属变量由对应 profile 管理。
 RUN : > /etc/environment
 
-RUN if [ "$ENABLE_mesa_ARG" = "true" ] && [ "$DISPLAY_BACKEND" = "anland-wayland" ]; then \
+RUN if [ "$ENABLE_mesa_ARG" = "true" ] && [ "$DISPLAY_BACKEND" = "wayland" ]; then \
         echo "MESA_LOADER_DRIVER_OVERRIDE=kgsl" >> /etc/environment; \
         echo "GALLIUM_DRIVER=kgsl" >> /etc/environment; \
         echo "FD_FORCE_KGSL=1" >> /etc/environment; \
@@ -164,11 +151,6 @@ RUN if [ "$PulseAudio" = "socket" ]; then \
         echo "PULSE_SERVER=tcp:127.0.0.1:4713" >> /etc/environment; \
     fi
 
-# 修复anland 音频堵塞
-# RUN if [ "$DISPLAY_BACKEND" = "anland-wayland" ]; then \
-#        mkdir -p /home/${USERNAME}/.config && \
-#       echo -e "\n[Sounds]\nEnable=false" >> /home/${USERNAME}/.config/kdeglobals ; \
-#     fi
 
 # 输入法开机自启动
 COPY scripts/start/ /tmp/droidspaces-start/
@@ -197,7 +179,7 @@ GLFW_IM_MODULE=fcitx
 EOF
     fi
 
-    if [ "$ENABLE_mesa_ARG" = "true" ] && [ "$DISPLAY_BACKEND" != "anland-wayland" ] ; then
+    if [ "$ENABLE_mesa_ARG" = "true" ] && [ "$DISPLAY_BACKEND" != "wayland" ] ; then
         cat <<'EOF' >> /etc/environment
 MESA_LOADER_DRIVER_OVERRIDE=kgsl
 TU_DEBUG=noconform

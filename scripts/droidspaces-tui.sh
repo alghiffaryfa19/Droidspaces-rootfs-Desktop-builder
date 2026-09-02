@@ -224,8 +224,6 @@ installer_names() {
         mesa) printf '%s\n%s\n' "install-mesa.sh" "install-mesa" ;;
         hangover) printf '%s\n%s\n' "install-hangover-wine.sh" "install-hangover-wine" ;;
         fonts) printf '%s\n%s\n' "install-winefonts.sh" "install-winefonts" ;;
-        kde) printf '%s\n%s\n' "install-anland-kde.sh" "install-anland-kde" ;;
-        gnome) printf '%s\n%s\n' "install-anland-gnome.sh" "install-anland-gnome" ;;
         *) return 1 ;;
     esac
 }
@@ -477,8 +475,7 @@ show_about() {
         '此工具统一调用仓库内的五个独立安装器；下载、校验、安装和软件包锁定仍由各安装器负责。' \
         'This tool dispatches the five standalone installers. Each installer still owns download, verification, installation, and package locking.')"
     printf '\n%s\n' "$(msg \
-        'GNOME Anland 仅支持 Debian 13 和 Ubuntu 26.04；KDE Anland 还支持 Fedora 43/44 与 Arch Linux。' \
-        'GNOME Anland supports Debian 13 and Ubuntu 26.04. KDE Anland also supports Fedora 43/44 and Arch Linux.')"
+"
     pause_menu
 }
 
@@ -491,8 +488,6 @@ main_menu() {
         print_component "1" "Mesa + MediaCodec VA-API" "mesa"
         print_component "2" "Hangover Wine" "hangover"
         print_component "3" "$(msg 'Wine 字体' 'Wine fonts')" "fonts"
-        print_component "4" "Anland KDE (KWin/Xwayland)" "kde"
-        print_component "5" "Anland GNOME (Mutter/Xwayland)" "gnome"
         printf '\n'
         printf '  %b[S]%b %s\n' "$COLOR_CYAN" "$COLOR_RESET" "$(msg '切换下载源' 'Change download source')"
         printf '  %b[C]%b %s\n' "$COLOR_CYAN" "$COLOR_RESET" "$(msg '清理下载缓存' 'Clean download cache')"
@@ -504,8 +499,6 @@ main_menu() {
             1) run_component "mesa" "Mesa + MediaCodec VA-API" ;;
             2) run_component "hangover" "Hangover Wine" ;;
             3) run_component "fonts" "$(msg 'Wine 字体' 'Wine fonts')" ;;
-            4) run_component "kde" "Anland KDE" ;;
-            5) run_component "gnome" "Anland GNOME" ;;
             s) select_download_source ;;
             c) manage_cache ;;
             a) show_about ;;
