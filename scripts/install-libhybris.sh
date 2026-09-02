@@ -69,6 +69,7 @@ echo "Cloning libhybris source for internal headers (required by create-disp)...
 git clone --depth=1 https://github.com/Linux-on-droid/libhybris.git
 mkdir -p /usr/include/hybris
 cp -r libhybris/hybris/include/hybris/* /usr/include/hybris/
+cp -r libhybris/hybris/platforms /usr/include/hybris/
 cd "$WORKDIR"
 
 echo "Configuring dynamic linker for Android partitions..."
