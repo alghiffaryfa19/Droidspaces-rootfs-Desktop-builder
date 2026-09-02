@@ -127,7 +127,11 @@ RUN sed -i '/en_US.UTF-8/s/^# //' /etc/locale.gen && \
     (deluser --remove-home debian || true) && \
     useradd -m -s /bin/bash ${USERNAME} && echo "${USERNAME}:1234" | chpasswd
 
-# 为所有 Debian RootFS 安装 Droidspaces USB Manager
+# 为所有 Debian 安装 libhybris 和 create-disp
+COPY scripts/install-libhybris.sh /usr/local/sbin/install-libhybris
+RUN chmod +x /usr/local/sbin/install-libhybris && /usr/local/sbin/install-libhybris
+
+# 为所有 RootFS 安装 Droidspaces USB Manager
 RUN /usr/local/sbin/install-droidspaces-usb-manager --user "${USERNAME}"
 
 # 初始化环境变量文件；桌面专属变量由对应 profile 管理。

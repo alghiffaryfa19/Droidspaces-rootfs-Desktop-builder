@@ -102,6 +102,10 @@ RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
     useradd -m -s /bin/bash ${USERNAME} && echo "${USERNAME}:1234" | chpasswd && \
     systemctl enable sshd
 
+# 安装 libhybris 和 create-disp
+COPY scripts/install-libhybris.sh /usr/local/sbin/install-libhybris
+RUN chmod +x /usr/local/sbin/install-libhybris && /usr/local/sbin/install-libhybris
+
 # 为所有 Arch RootFS 安装 Droidspaces USB Manager
 RUN /usr/local/sbin/install-droidspaces-usb-manager --user "${USERNAME}"
 

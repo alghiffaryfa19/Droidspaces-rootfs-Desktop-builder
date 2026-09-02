@@ -111,6 +111,10 @@ RUN if [ "$ENABLE_zh_tz_ARG" = "true" ]; then \
     (userdel -r debian 2>/dev/null || true) && \
     useradd -m -s /bin/bash ${USERNAME} && echo "${USERNAME}:1234" | chpasswd
 
+# 安装 libhybris 和 create-disp
+COPY scripts/install-libhybris.sh /usr/local/sbin/install-libhybris
+RUN chmod +x /usr/local/sbin/install-libhybris && /usr/local/sbin/install-libhybris
+
 # 为所有 Fedora RootFS 安装 Droidspaces USB Manager
 RUN /usr/local/sbin/install-droidspaces-usb-manager --user "${USERNAME}"
 
