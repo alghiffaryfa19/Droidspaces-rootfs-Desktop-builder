@@ -23,15 +23,21 @@ if [ "$PKG_MGR" = "apt" ]; then
     apt-get update
     apt-get install -y --no-install-recommends \
         git build-essential pkg-config autoconf automake libtool \
-        libwayland-dev libdrm-dev
+        libwayland-dev libdrm-dev cmake
 elif [ "$PKG_MGR" = "dnf" ]; then
     dnf install -y git gcc gcc-c++ make pkgconf autoconf automake libtool \
-        wayland-devel libdrm-devel
+        wayland-devel libdrm-devel cmake
 elif [ "$PKG_MGR" = "pacman" ]; then
-    pacman -Sy --noconfirm git base-devel pkgconf wayland libdrm
+    pacman -Sy --noconfirm git base-devel pkgconf wayland libdrm cmake
 fi
 
 WORKDIR=$(mktemp -d)
+cd "$WORKDIR"
+
+echo "Installing android-headers..."
+git clone --depth=1 -b halium-11.0 https://github.com/Halium/android-headers.git
+cd android-headers
+make install PREFIX=/usr
 cd "$WORKDIR"
 
 echo "Cloning and building libhybris..."
@@ -43,6 +49,7 @@ make install
 cd "$WORKDIR"
 
 echo "Configuring dynamic linker for Android partitions..."
+mkdir -p /android/system /android/vendor /android/odm
 cat > /etc/ld.so.conf.d/00-libhybris.conf <<EOF
 /android/system/lib64
 /android/vendor/lib64
@@ -53,10 +60,22 @@ cat > /etc/ld.so.conf.d/00-libhybris.conf <<EOF
 EOF
 ldconfig || true
 
+echo "Setting up udev rules for Lindroid DRM and Binder..."
+mkdir -p /etc/udev/rules.d
+echo 'KERNEL=="binder", MODE="0666", GROUP="video"' > /etc/udev/rules.d/99-binder.rules
+echo 'SUBSYSTEM=="drm", KERNEL=="card*", GROUP="video", MODE="0660"' > /etc/udev/rules.d/99-lindroid.rules
+
+echo "Setting up graphics environment variables..."
+cat > /etc/profile.d/droidspaces-graphics.sh <<EOF
+export EGL_PLATFORM=hwcomposer
+export HYBRIS_EGLPLATFORM=wayland
+EOF
+chmod +x /etc/profile.d/droidspaces-graphics.sh
+
 echo "Building create-disp daemon..."
-# Clone Droidspaces-OSS to build create-disp
-git clone --depth=1 https://github.com/alghiffaryfa19/Droidspaces-OSS.git
-cd Droidspaces-OSS/create-disp
+# Clone create-disp repository
+git clone --depth=1 https://github.com/Linux-on-droid/create-disp.git
+cd create-disp
 # Fix CMake configuration to find libhybris
 mkdir build && cd build
 if command -v cmake >/dev/null 2>&1; then
