@@ -54,19 +54,27 @@ HYB_URL="http://repo.ubports.com/pool/main/libh/libhybris/"
 HYB_LIB=$(curl -s $HYB_URL | grep -o "libhybris_[0-9][^\"]*_${DEB_ARCH}\.deb" | sort -V | tail -n 1)
 HYB_DEV=$(curl -s $HYB_URL | grep -o "libhybris-dev_[0-9][^\"]*_${DEB_ARCH}\.deb" | sort -V | tail -n 1)
 HYB_COM=$(curl -s $HYB_URL | grep -o "libhybris-common1_[0-9][^\"]*_${DEB_ARCH}\.deb" | sort -V | tail -n 1)
+HYB_HW=$(curl -s $HYB_URL | grep -o "libhardware2_[0-9][^\"]*_${DEB_ARCH}\.deb" | sort -V | tail -n 1)
+HYB_PROP=$(curl -s $HYB_URL | grep -o "libandroid-properties1_[0-9][^\"]*_${DEB_ARCH}\.deb" | sort -V | tail -n 1)
 
 wget -q ${HYB_URL}${HYB_LIB} -O hyb-lib.deb
 wget -q ${HYB_URL}${HYB_DEV} -O hyb-dev.deb
 wget -q ${HYB_URL}${HYB_COM} -O hyb-com.deb
+wget -q ${HYB_URL}${HYB_HW} -O hyb-hw.deb
+wget -q ${HYB_URL}${HYB_PROP} -O hyb-prop.deb
 
 if command -v dpkg >/dev/null 2>&1; then
     dpkg -x hyb-lib.deb /
     dpkg -x hyb-dev.deb /
     dpkg -x hyb-com.deb /
+    dpkg -x hyb-hw.deb /
+    dpkg -x hyb-prop.deb /
 else
     ar x hyb-lib.deb data.tar.xz && tar xf data.tar.xz -C /
     ar x hyb-dev.deb data.tar.xz && tar xf data.tar.xz -C /
     ar x hyb-com.deb data.tar.xz && tar xf data.tar.xz -C /
+    ar x hyb-hw.deb data.tar.xz && tar xf data.tar.xz -C /
+    ar x hyb-prop.deb data.tar.xz && tar xf data.tar.xz -C /
 fi
 
 echo "Creating missing .so symlinks for libhybris libraries..."
