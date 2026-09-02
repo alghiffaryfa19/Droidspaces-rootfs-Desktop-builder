@@ -125,6 +125,7 @@ cd create-disp
 sed -i 's/hybris-platformcommon//g' CMakeLists.txt
 mkdir build && cd build
 if command -v cmake >/dev/null 2>&1; then
+    export LDFLAGS="-Wl,--allow-shlib-undefined"
     cmake .. -DCMAKE_BUILD_TYPE=Release
     make -j$(nproc)
     if [ -f create-disp ]; then
