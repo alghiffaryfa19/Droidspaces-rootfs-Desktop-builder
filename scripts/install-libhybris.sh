@@ -69,6 +69,23 @@ else
     ar x hyb-com.deb data.tar.xz && tar xf data.tar.xz -C /
 fi
 
+echo "Creating missing .so symlinks for libhybris libraries..."
+LIB_DIR=""
+if [ -d /usr/lib/aarch64-linux-gnu ]; then
+    LIB_DIR="/usr/lib/aarch64-linux-gnu"
+elif [ -d /usr/lib/arm-linux-gnueabihf ]; then
+    LIB_DIR="/usr/lib/arm-linux-gnueabihf"
+fi
+if [ -n "$LIB_DIR" ]; then
+    for lib in $(find "$LIB_DIR" -type f -name "libhybris*.so.*" -o -type l -name "libhybris*.so.*"); do
+        base=$(basename "$lib")
+        so_name=$(echo "$base" | sed 's/\.so\..*/.so/')
+        if [ ! -f "$LIB_DIR/$so_name" ] && [ ! -L "$LIB_DIR/$so_name" ]; then
+            ln -sf "$base" "$LIB_DIR/$so_name"
+        fi
+    done
+fi
+
 echo "Cloning libhybris source for internal headers (required by create-disp)..."
 git clone --depth=1 https://github.com/Linux-on-droid/libhybris.git
 mkdir -p /usr/include/hybris
