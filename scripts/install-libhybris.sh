@@ -41,7 +41,7 @@ make install PREFIX=/usr
 cd "$WORKDIR"
 
 echo "Cloning and building libhybris..."
-git clone --depth=1 https://github.com/libhybris/libhybris.git
+git clone --depth=1 https://github.com/Linux-on-droid/libhybris.git
 cd libhybris/hybris
 ./autogen.sh --prefix=/usr
 make -j$(nproc)
