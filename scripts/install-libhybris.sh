@@ -23,12 +23,12 @@ if [ "$PKG_MGR" = "apt" ]; then
     apt-get update
     apt-get install -y --no-install-recommends \
         git build-essential pkg-config autoconf automake libtool \
-        libwayland-dev libdrm-dev cmake clang
+        libwayland-dev libdrm-dev cmake libsystemd-dev
 elif [ "$PKG_MGR" = "dnf" ]; then
     dnf install -y git gcc gcc-c++ make pkgconf autoconf automake libtool \
-        wayland-devel libdrm-devel cmake clang
+        wayland-devel libdrm-devel cmake systemd-devel
 elif [ "$PKG_MGR" = "pacman" ]; then
-    pacman -Sy --noconfirm git base-devel pkgconf wayland libdrm cmake clang
+    pacman -Sy --noconfirm git base-devel pkgconf wayland libdrm cmake systemd
 fi
 
 WORKDIR=$(mktemp -d)
