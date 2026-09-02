@@ -40,17 +40,35 @@ cd android-headers
 make install PREFIX=/usr
 cd "$WORKDIR"
 
-echo "Cloning and building libhybris..."
+echo "Installing prebuilt libhybris from UBPorts..."
+ARCH=$(uname -m)
+if [ "$ARCH" = "aarch64" ]; then
+    DEB_ARCH="arm64"
+elif [ "$ARCH" = "armv7l" ] || [ "$ARCH" = "armv8l" ]; then
+    DEB_ARCH="armhf"
+else
+    DEB_ARCH="i386"
+fi
+
+HYB_URL="http://repo.ubports.com/pool/main/libh/libhybris/"
+HYB_COM=$(curl -s $HYB_URL | grep -o "libhybris_[0-9][^\"]*_${DEB_ARCH}\.deb" | head -n 1)
+HYB_DEV=$(curl -s $HYB_URL | grep -o "libhybris-dev_[0-9][^\"]*_${DEB_ARCH}\.deb" | head -n 1)
+
+wget -q ${HYB_URL}${HYB_COM}
+wget -q ${HYB_URL}${HYB_DEV}
+
+if command -v dpkg >/dev/null 2>&1; then
+    dpkg -x ${HYB_COM} /
+    dpkg -x ${HYB_DEV} /
+else
+    ar x ${HYB_COM} data.tar.xz && tar xf data.tar.xz -C /
+    ar x ${HYB_DEV} data.tar.xz && tar xf data.tar.xz -C /
+fi
+
+echo "Cloning libhybris source for internal headers (required by create-disp)..."
 git clone --depth=1 https://github.com/Linux-on-droid/libhybris.git
-cd libhybris/hybris
-export CC=clang
-export CXX=clang++
-export CFLAGS="-Wno-error"
-export CXXFLAGS="-Wno-error"
-export LDFLAGS=""
-./autogen.sh --prefix=/usr
-make -j$(nproc)
-make install
+mkdir -p /usr/include/hybris
+cp -r libhybris/hybris/include/hybris/* /usr/include/hybris/
 cd "$WORKDIR"
 
 echo "Configuring dynamic linker for Android partitions..."
