@@ -51,8 +51,8 @@ else
 fi
 
 HYB_URL="http://repo.ubports.com/pool/main/libh/libhybris/"
-HYB_COM=$(curl -s $HYB_URL | grep -o "libhybris_[0-9][^\"]*_${DEB_ARCH}\.deb" | head -n 1)
-HYB_DEV=$(curl -s $HYB_URL | grep -o "libhybris-dev_[0-9][^\"]*_${DEB_ARCH}\.deb" | head -n 1)
+HYB_COM=$(curl -s $HYB_URL | grep -o "libhybris_[0-9][^\"]*_${DEB_ARCH}\.deb" | sort -V | tail -n 1)
+HYB_DEV=$(curl -s $HYB_URL | grep -o "libhybris-dev_[0-9][^\"]*_${DEB_ARCH}\.deb" | sort -V | tail -n 1)
 
 wget -q ${HYB_URL}${HYB_COM}
 wget -q ${HYB_URL}${HYB_DEV}
